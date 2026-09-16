@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dev Meme Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#14171c;
+    --panel:#1a1e25;
+    --panel-2:#20252d;
+    --panel-3:#262c35;
+    --line:#2b3038;
+    --line-2:#343b46;
+    --text:#e9e7e0;
+    --text-dim:#8b909c;
+    --text-faint:#5c6270;
+    --accent:#e8a33d;
+    --accent-dim:#8a6a34;
+    --accent-2:#5b8def;
+    --danger:#e0645a;
+    --danger-dim:#3a2523;
+    --radius:6px;
+    --mono:'JetBrains Mono', ui-monospace, monospace;
+    --sans:'Inter', -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{min-height:100vh;display:flex;flex-direction:column;}
+  button{font-family:var(--sans);cursor:pointer;}
+  input,textarea,select{font-family:var(--sans);}
+  ::selection{background:var(--accent-dim);}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 22px;
+    border-bottom:1px solid var(--line);
+    background:var(--panel);
+    flex-shrink:0;
+  }
+  .brand{
+    display:flex;align-items:center;gap:10px;
+    font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:.2px;
+    cursor:pointer;user-select:none;
+  }
+  .brand .dots{display:flex;gap:5px;}
+  .brand .dot{width:9px;height:9px;border-radius:50%;}
+  .brand .dot:nth-child(1){background:#e0645a;}
+  .brand .dot:nth-child(2){background:#e8b23d;}
+  .brand .dot:nth-child(3){background:#5fb87a;}
+  .brand .name{color:var(--text);}
+  .brand .name span{color:var(--accent);}
+  .topbar-right{display:flex;align-items:center;gap:10px;}
+
+  /* ---------- buttons ---------- */
+  .btn{
+    border:1px solid var(--line-2);
+    background:var(--panel-2);
+    color:var(--text);
+    padding:8px 14px;
+    border-radius:var(--radius);
+    font-size:13px;font-weight:500;
+    display:inline-flex;align-items:center;gap:7px;
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .btn:hover{border-color:var(--text-faint);background:var(--panel-3);}
+  .btn:active{transform:translateY(1px);}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#1a1206;font-weight:700;}
+  .btn.primary:hover{background:#f0ad4d;}
+  .btn.danger{background:transparent;border-color:var(--danger-dim);color:var(--danger);}
+  .btn.danger:hover{background:var(--danger-dim);}
+  .btn.small{padding:5px 10px;font-size:12px;}
+  .btn.block{width:100%;justify-content:center;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--text-dim);}
+  .btn.ghost:hover{color:var(--text);background:var(--panel-2);}
+
+  /* ---------- template select screen ---------- */
+  .screen-templates{flex:1;padding:40px 24px 60px;max-width:1080px;margin:0 auto;width:100%;}
+  .screen-templates .lead{margin-bottom:34px;}
+  .screen-templates .lead h1{
+    font-size:26px;margin:0 0 8px;font-weight:700;letter-spacing:-.2px;
+  }
+  .screen-templates .lead p{margin:0;color:var(--text-dim);font-size:14px;line-height:1.6;}
+  .section-label{
+    font-family:var(--mono);font-size:11px;color:var(--text-faint);
+    text-transform:lowercase;margin:0 0 12px;letter-spacing:.3px;
+  }
+  .template-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:38px;
+  }
+  .tpl-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    overflow:hidden;text-align:left;padding:0;color:var(--text);
+    display:flex;flex-direction:column;transition:border-color .12s ease, transform .12s ease;
+  }
+  .tpl-card:hover{border-color:var(--accent-dim);transform:translateY(-2px);}
+  .tpl-card .tpl-chrome{
+    display:flex;gap:5px;padding:9px 10px;border-bottom:1px solid var(--line);
+  }
+  .tpl-card .tpl-chrome .d{width:7px;height:7px;border-radius:50%;background:var(--line-2);}
+  .tpl-card .tpl-preview{
+    aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;flex-direction:column;
+    gap:10px;padding:14px;
+  }
+  .tpl-card .tpl-preview .emoji{font-size:38px;line-height:1;}
+  .tpl-card .tpl-preview .phrase{
+    font-size:12.5px;color:var(--text);text-align:center;line-height:1.4;font-weight:500;
+  }
+  .tpl-card .tpl-footer{
+    padding:9px 12px;border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:11px;color:var(--text-dim);
+    display:flex;justify-content:space-between;
+  }
+  .tpl-card.special{
+    align-items:center;justify-content:center;min-height:100%;
+  }
+  .tpl-card.special .tpl-preview{justify-content:center;color:var(--text-dim);}
+  .tpl-card.special .plus{font-size:30px;color:var(--accent);}
+  .mytpl-list{display:flex;flex-direction:column;gap:8px;}
+  .mytpl-row{
+    display:flex;align-items:center;gap:14px;background:var(--panel);
+    border:1px solid var(--line);border-radius:8px;padding:10px 14px;
+  }
+  .mytpl-row .thumb{
+    width:44px;height:44px;border-radius:6px;background:var(--panel-2);
+    display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+    border:1px solid var(--line);
+  }
+  .mytpl-row .info{flex:1;min-width:0;}
+  .mytpl-row .info .name{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .mytpl-row .info .meta{font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-top:2px;}
+  .mytpl-row .actions{display:flex;gap:6px;flex-shrink:0;}
+  .empty-note{
+    color:var(--text-faint);font-size:13px;padding:22px;text-align:center;
+    border:1px dashed var(--line-2);border-radius:8px;
+  }
+
+  .import-box{
+    margin-top:38px;padding:16px;border:1px solid var(--line);border-radius:8px;background:var(--panel);
+  }
+  .import-box textarea{
+    width:100%;min-height:90px;background:var(--panel-2);border:1px solid var(--line-2);
+    border-radius:6px;color:var(--text);font-family:var(--mono);font-size:12px;padding:10px;
+    resize:vertical;
+  }
+  .import-row{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap;}
+  .file-btn{position:relative;overflow:hidden;}
+  .file-btn input[type=file]{
+    position:absolute;inset:0;opacity:0;cursor:pointer;
+  }
+
+  .banner{
+    font-size:13px;padding:10px 13px;border-radius:6px;margin-top:12px;
+    display:flex;align-items:flex-start;gap:8px;line-height:1.5;
+  }
+  .banner.error{background:var(--danger-dim);color:#ffb3ac;border:1px solid #5a332f;}
+  .banner.ok{background:#203a2c;color:#a6e3b5;border:1px solid #2f5940;}
+
+  /* ---------- editor screen ---------- */
+  .screen-editor{flex:1;display:flex;min-height:0;}
+  .editor-canvas-col{
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    padding:28px 20px;overflow:auto;min-width:0;
+  }
+  .ratio-tabs{display:flex;gap:4px;margin-bottom:18px;background:var(--panel);padding:4px;border-radius:7px;border:1px solid var(--line);}
+  .ratio-tabs button{
+    background:transparent;border:none;color:var(--text-dim);padding:6px 16px;border-radius:5px;
+    font-family:var(--mono);font-size:12.5px;font-weight:600;
+  }
+  .ratio-tabs button.active{background:var(--accent);color:#1a1206;}
+
+  .canvas-shell{
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:14px;display:flex;flex-direction:column;align-items:stretch;gap:10px;
+    width:100%;max-width:640px;
+  }
+  .canvas-tab{
+    align-self:flex-start;font-family:var(--mono);font-size:11px;color:var(--text-faint);
+    display:flex;align-items:center;gap:6px;
+  }
+  .canvas-tab .tpl-id-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);}
+
+  #canvas-wrap{
+    position:relative;
+    width:100%;
+    background:#222;
+    background-size:cover;background-position:center;
+    overflow:hidden;
+    border-radius:4px;
+    box-shadow:0 0 0 1px var(--line-2);
+    touch-action:none;
+    user-select:none;
+  }
+  .el{
+    position:absolute;
+    outline:none;
+  }
+  .el-image{
+    display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:grab;
+  }
+  .el-image.selected{box-shadow:0 0 0 2px var(--accent-2);}
+  .el-image img{width:100%;height:100%;object-fit:fill;pointer-events:none;}
+  .el-image .emoji-glyph{line-height:1;pointer-events:none;white-space:nowrap;}
+  .el-text{
+    transform:translate(-50%,-50%);
+    white-space:pre-wrap;
+    text-align:center;
+    cursor:grab;
+    padding:2px 4px;
+    max-width:92%;
+  }
+  .el-text.nowrap{ white-space:pre; max-width:none; overflow:visible; }
+  .el-text.selected{box-shadow:0 0 0 2px var(--accent-2);}
+  .el.dragging{cursor:grabbing;}
+  .resize-handle{
+    position:absolute;right:-6px;bottom:-6px;width:13px;height:13px;
+    background:var(--accent-2);border:2px solid var(--bg);border-radius:50%;
+    cursor:nwse-resize;
+    z-index:2;
+  }
+  .resize-handle.edge-right{
+    right:-5px;top:50%;bottom:auto;left:auto;
+    width:9px;height:26px;border-radius:4px;
+    transform:translateY(-50%);
+    cursor:ew-resize;
+  }
+  .resize-handle.edge-bottom{
+    bottom:-5px;left:50%;right:auto;top:auto;
+    width:26px;height:9px;border-radius:4px;
+    transform:translateX(-50%);
+    cursor:ns-resize;
+  }
+
+  .empty-canvas-hint{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:rgba(255,255,255,.28);font-size:12px;font-family:var(--mono);pointer-events:none;
+    text-align:center;padding:20px;
+  }
+
+  .editor-panel{
+    width:300px;flex-shrink:0;border-left:1px solid var(--line);background:var(--panel);
+    padding:18px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:20px;
+  }
+  .panel-block{display:flex;flex-direction:column;gap:9px;}
+  .panel-block .title{
+    font-family:var(--mono);font-size:11px;color:var(--text-faint);letter-spacing:.3px;
+  }
+  .tpl-name-input{
+    background:var(--panel-2);border:1px solid var(--line-2);border-radius:6px;
+    color:var(--text);font-size:14px;font-weight:600;padding:8px 10px;width:100%;
+  }
+  .field label{
+    display:block;font-size:12px;color:var(--text-dim);margin-bottom:5px;
+  }
+  .field textarea{
+    width:100%;background:var(--panel-2);border:1px solid var(--line-2);border-radius:6px;
+    color:var(--text);font-size:13px;padding:8px;resize:vertical;min-height:56px;
+  }
+  .field input[type=range]{width:100%;}
+  .field-row{display:flex;align-items:center;gap:10px;}
+  .field-row .num{font-family:var(--mono);font-size:12px;color:var(--text-dim);min-width:28px;text-align:right;}
+  .swatches{display:flex;flex-wrap:wrap;gap:7px;}
+  .swatch{
+    width:26px;height:26px;border-radius:5px;border:1px solid var(--line-2);
+    background:var(--panel-2);font-size:15px;display:flex;align-items:center;justify-content:center;
+  }
+  .swatch:hover{border-color:var(--accent);}
+  .color-input-row{display:flex;align-items:center;gap:10px;}
+  .color-input-row input[type=color]{
+    width:38px;height:32px;border:1px solid var(--line-2);border-radius:6px;background:none;padding:2px;
+  }
+  .color-hex{font-family:var(--mono);font-size:12px;color:var(--text-dim);}
+  .emoji-add-row{display:flex;gap:6px;}
+  .emoji-add-row input{
+    flex:1;background:var(--panel-2);border:1px solid var(--line-2);border-radius:6px;
+    color:var(--text);font-size:15px;padding:6px 8px;text-align:center;
+  }
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .toggle-row .toggle-label{font-size:12px;color:var(--text-dim);}
+  .toggle-switch{
+    position:relative;width:38px;height:22px;border-radius:11px;background:var(--panel-3);
+    border:1px solid var(--line-2);flex-shrink:0;cursor:pointer;transition:background .12s ease;
+  }
+  .toggle-switch.on{background:var(--accent-dim);border-color:var(--accent);}
+  .toggle-switch .knob{
+    position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+    background:var(--text);transition:left .12s ease;
+  }
+  .toggle-switch.on .knob{left:18px;background:var(--accent);}
+  .toggle-hint{font-size:11px;color:var(--text-faint);line-height:1.5;margin-top:-4px;}
+
+  .emoji-picker-backdrop{
+    position:fixed;inset:0;background:rgba(10,12,15,.6);
+    display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;
+  }
+  .emoji-picker-modal{
+    background:var(--panel);border:1px solid var(--line-2);border-radius:10px;
+    width:100%;max-width:360px;max-height:76vh;display:flex;flex-direction:column;overflow:hidden;
+  }
+  .emoji-picker-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 14px;border-bottom:1px solid var(--line);flex-shrink:0;
+  }
+  .emoji-picker-head .t{font-family:var(--mono);font-size:12px;color:var(--text-dim);}
+  .emoji-picker-body{padding:12px 14px;overflow-y:auto;}
+  .emoji-picker-section{margin-bottom:14px;}
+  .emoji-picker-section:last-child{margin-bottom:0;}
+  .emoji-picker-grid{
+    display:grid;grid-template-columns:repeat(7,1fr);gap:6px;
+  }
+  .emoji-picker-grid button{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:6px;
+    font-size:18px;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+  }
+  .emoji-picker-grid button:hover{border-color:var(--accent);}
+  .emoji-picker-custom{
+    display:flex;gap:6px;padding:12px 14px;border-top:1px solid var(--line);flex-shrink:0;
+  }
+  .emoji-picker-custom input{
+    flex:1;background:var(--panel-2);border:1px solid var(--line-2);border-radius:6px;
+    color:var(--text);font-size:15px;padding:6px 8px;text-align:center;
+  }
+  .no-selection{
+    color:var(--text-faint);font-size:12.5px;line-height:1.6;padding:14px 0;
+  }
+  .divider{height:1px;background:var(--line);margin:2px 0;}
+  .panel-actions{display:flex;flex-direction:column;gap:8px;margin-top:auto;}
+  .panel-actions .row{display:flex;gap:8px;}
+  .panel-actions .row .btn{flex:1;}
+
+  @media (max-width: 860px){
+    .screen-editor{flex-direction:column;}
+    .editor-panel{width:100%;border-left:none;border-top:1px solid var(--line);}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+  "use strict";
+
+  /* =======================================================================
+     CONSTANTS
+  ======================================================================= */
+  var REF_W = 900; // reference width that fontSize / drag math is authored against
+  var RATIOS = { "1:1":[1,1], "4:5":[4,5], "9:16":[9,16] };
+  var OUT_W = 1080; // rendered download width in px
+  var EMOJI_SECTIONS = [
+    { label: "개발 / 오피스", items: ["🐛","💻","📚","🧑‍💼","☕","👀","🚀","🖥️","⌨️","📈","📉","🗂️","📌","🧪","🛠️","⚙️","🔔","📅","💡","🧵"] },
+    { label: "표정", items: ["😭","😅","🤯","😱","😤","🥲","😮‍💨","😴","🤔","😇","🙃","😬","🥹","😢","😡","😆"] },
+    { label: "제스처 / 기타", items: ["🔥","💀","✅","❌","👍","👎","🙏","👏","🤝","💰","⏰","⚡","💯","🚨","🎯","🏆"] }
+  ];
+  var EMOJI_PICKS = EMOJI_SECTIONS.reduce(function(acc, s){ return acc.concat(s.items); }, []);
+
+  var DEFAULT_TEMPLATES = [
+    mkDefault("default-bug","BUG","🐛","왜 여기서 에러가 나지?","#1c2530"),
+    mkDefault("default-code","CODE","💻","코드는 분명 맞는데...","#16202c"),
+    mkDefault("default-study","STUDY","📚","오늘은 진짜 공부한다","#20241c"),
+    mkDefault("default-interview","INTERVIEW","🧑‍💼","면접관님 질문이 너무 어렵습니다","#241c20"),
+    mkDefault("default-office","OFFICE","☕","퇴근하고 싶다","#241f16"),
+    mkDefault("default-pov","POV","👀","POV: 배포 직전에 코드를 수정함","#1a1a24")
+  ];
+
+  function mkDefault(id, name, emoji, phrase, bgColor){
+    return {
+      id: id,
+      name: name,
+      ratio: "1:1",
+      bgColor: bgColor,
+      baseImage: { src: null },
+      images: [
+        { id: uid(), type: "emoji", content: emoji, x: 0.10, y: 0.08, width: 0.22, height: 0.22 }
+      ],
+      texts: [
+        { id: uid(), content: phrase, x: 0.5, y: 0.78, fontSize: 34, color: "#f4f2ea", wrap: true }
+      ]
+    };
+  }
+
+  function uid(){
+    return "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,9);
+  }
+  function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  // Output canvas height (px) for a given ratio key, with OUT_W held fixed.
+  function outHFor(ratioKey){
+    var r = RATIOS[ratioKey] || RATIOS["1:1"];
+    return OUT_W * r[1] / r[0];
+  }
+
+  // When the aspect ratio changes, the canvas's pixel width stays fixed
+  // (OUT_W) but its pixel height changes. Image/emoji `height` is a
+  // fraction of that pixel height, so left as-is it would make stickers
+  // visually stretch and emoji visually grow/shrink on ratio switches.
+  // Rescale height so the on-screen pixel size (and shape) stays put;
+  // x/y/width are already fractions of the constant OUT_W, so they need
+  // no adjustment, and position is expected to move proportionally.
+  function applyRatioChange(template, newRatioKey){
+    var oldRatioKey = template.ratio;
+    if (oldRatioKey === newRatioKey || !RATIOS[newRatioKey]) { template.ratio = newRatioKey; return; }
+    var factor = outHFor(oldRatioKey) / outHFor(newRatioKey);
+    (template.images || []).forEach(function(el){
+      el.height = clamp(el.height * factor, 0.02, 2);
+    });
+    template.ratio = newRatioKey;
+  }
+
+  /* =======================================================================
+     STATE
+  ======================================================================= */
+  var state = {
+    screen: "templates",          // "templates" | "editor"
+    userTemplates: [],            // kept only in memory for this tab session — see JSON Export/Import
+    currentTemplate: null,
+    currentSource: null,          // "default" | "user" | "new"
+    selectedElement: null,        // {type:'image'|'text', id}
+    canvasBanner: null,           // {type:'error'|'ok', text}
+    templatesBanner: null,
+    importText: "",
+    emojiPickerOpen: false
+  };
+
+  var app = document.getElementById("app");
+
+  /* =======================================================================
+     VALIDATION (JSON import)
+  ======================================================================= */
+  function validateTemplateObject(obj){
+    if (typeof obj !== "object" || obj === null || Array.isArray(obj)){
+      return { ok:false, error:"템플릿 데이터는 객체(object)여야 합니다." };
+    }
+    var required = ["id","name","ratio","baseImage","images","texts"];
+    for (var i=0;i<required.length;i++){
+      if (!(required[i] in obj)){
+        return { ok:false, error:"필수 항목이 누락되었습니다: " + required[i] };
+      }
+    }
+    if (typeof obj.name !== "string" || !obj.name.trim()){
+      return { ok:false, error:"name 값이 올바르지 않습니다." };
+    }
+    if (typeof obj.ratio !== "string" || !RATIOS[obj.ratio]){
+      return { ok:false, error:"ratio 값은 1:1, 4:5, 9:16 중 하나여야 합니다." };
+    }
+    if (typeof obj.baseImage !== "object" || obj.baseImage === null || !("src" in obj.baseImage)){
+      return { ok:false, error:"baseImage 형식이 올바르지 않습니다." };
+    }
+    if (obj.baseImage.src !== null && typeof obj.baseImage.src !== "string"){
+      return { ok:false, error:"baseImage.src 값의 타입이 올바르지 않습니다." };
+    }
+    if (!Array.isArray(obj.images)){
+      return { ok:false, error:"images는 배열이어야 합니다." };
+    }
+    if (!Array.isArray(obj.texts)){
+      return { ok:false, error:"texts는 배열이어야 합니다." };
+    }
+    for (var a=0;a<obj.images.length;a++){
+      var im = obj.images[a];
+      if (typeof im !== "object" || im === null){
+        return { ok:false, error:"images[" + a + "] 형식이 올바르지 않습니다." };
+      }
+      var imReq = ["id","type","content","x","y","width","height"];
+      for (var b=0;b<imReq.length;b++){
+        if (!(imReq[b] in im)) return { ok:false, error:"images[" + a + "]에 " + imReq[b] + " 항목이 없습니다." };
+      }
+      if (typeof im.id !== "string") return { ok:false, error:"images[" + a + "].id 타입 오류" };
+      if (im.type !== "emoji" && im.type !== "sticker") return { ok:false, error:"images[" + a + "].type 값 오류" };
+      if (typeof im.content !== "string") return { ok:false, error:"images[" + a + "].content 타입 오류" };
+      var nums = ["x","y","width","height"];
+      for (var c=0;c<nums.length;c++){
+        if (typeof im[nums[c]] !== "number" || isNaN(im[nums[c]])){
+          return { ok:false, error:"images[" + a + "]." + nums[c] + " 타입 오류" };
+        }
+      }
+      if (im.x < -0.2 || im.x > 1.2 || im.y < -0.2 || im.y > 1.2){
+        return { ok:false, error:"images[" + a + "]의 x/y 값이 허용 범위를 벗어났습니다." };
+      }
+      if (im.width <= 0 || im.width > 2 || im.height <= 0 || im.height > 2){
+        return { ok:false, error:"images[" + a + "]의 width/height 값이 허용 범위를 벗어났습니다." };
+      }
+    }
+    for (var d=0;d<obj.texts.length;d++){
+      var tx = obj.texts[d];
+      if (typeof tx !== "object" || tx === null){
+        return { ok:false, error:"texts[" + d + "] 형식이 올바르지 않습니다." };
+      }
+      var txReq = ["id","content","x","y","fontSize","color"];
+      for (var e=0;e<txReq.length;e++){
+        if (!(txReq[e] in tx)) return { ok:false, error:"texts[" + d + "]에 " + txReq[e] + " 항목이 없습니다." };
+      }
+      if (typeof tx.id !== "string") return { ok:false, error:"texts[" + d + "].id 타입 오류" };
+      if (typeof tx.content !== "string") return { ok:false, error:"texts[" + d + "].content 타입 오류" };
+      if (typeof tx.x !== "number" || typeof tx.y !== "number" || isNaN(tx.x) || isNaN(tx.y)){
+        return { ok:false, error:"texts[" + d + "]의 x/y 타입 오류" };
+      }
+      if (tx.x < -0.2 || tx.x > 1.2 || tx.y < -0.2 || tx.y > 1.2){
+        return { ok:false, error:"texts[" + d + "]의 x/y 값이 허용 범위를 벗어났습니다." };
+      }
+      if (typeof tx.fontSize !== "number" || isNaN(tx.fontSize) || tx.fontSize < 6 || tx.fontSize > 400){
+        return { ok:false, error:"texts[" + d + "]의 fontSize 값이 올바르지 않습니다." };
+      }
+      if (typeof tx.color !== "string" || !/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(tx.color)){
+        return { ok:false, error:"texts[" + d + "]의 color 값이 올바르지 않은 색상 코드입니다." };
+      }
+      if (("wrap" in tx) && typeof tx.wrap !== "boolean"){
+        return { ok:false, error:"texts[" + d + "]의 wrap 값은 true/false 여야 합니다." };
+      }
+    }
+    return { ok:true };
+  }
+
+  function parseAndValidateJSON(raw){
+    var parsed;
+    try{
+      parsed = JSON.parse(raw);
+    }catch(e){
+      return { ok:false, error:"JSON 문법이 올바르지 않습니다. 입력 내용을 다시 확인해주세요." };
+    }
+    var v = validateTemplateObject(parsed);
+    if (!v.ok) return v;
+    return { ok:true, template: parsed };
+  }
+
+  /* =======================================================================
+     RENDER-TO-CANVAS (download) — shares coordinate math with preview
+  ======================================================================= */
+  function loadImageAsync(src){
+    return new Promise(function(resolve, reject){
+      var img = new Image();
+      img.onload = function(){ resolve(img); };
+      img.onerror = function(){ reject(new Error("image load failed")); };
+      img.src = src;
+    });
+  }
+
+  function renderTemplateToCanvas(template){
+    var ratio = RATIOS[template.ratio] || RATIOS["1:1"];
+    var outW = OUT_W;
+    var outH = Math.round(outW * ratio[1] / ratio[0]);
+    var canvas = document.createElement("canvas");
+    canvas.width = outW; canvas.height = outH;
+    var ctx = canvas.getContext("2d");
+
+    var chain = Promise.resolve();
+
+    chain = chain.then(function(){
+      if (template.baseImage && template.baseImage.src){
+        return loadImageAsync(template.baseImage.src).then(function(img){
+          var scale = Math.max(outW / img.width, outH / img.height);
+          var dw = img.width * scale, dh = img.height * scale;
+          var dx = (outW - dw) / 2, dy = (outH - dh) / 2;
+          ctx.fillStyle = template.bgColor || "#1c2028";
+          ctx.fillRect(0,0,outW,outH);
+          ctx.drawImage(img, dx, dy, dw, dh);
+        }).catch(function(){
+          ctx.fillStyle = template.bgColor || "#1c2028";
+          ctx.fillRect(0,0,outW,outH);
+        });
+      } else {
+        ctx.fillStyle = template.bgColor || "#1c2028";
+        ctx.fillRect(0,0,outW,outH);
+        return Promise.resolve();
+      }
+    });
+
+    (template.images || []).forEach(function(el){
+      chain = chain.then(function(){
+        var px = el.x * outW, py = el.y * outH;
+        var pw = el.width * outW, ph = el.height * outH;
+        if (el.type === "emoji"){
+          ctx.save();
+          ctx.font = Math.round(ph) + "px sans-serif";
+          ctx.textBaseline = "top";
+          ctx.textAlign = "left";
+          ctx.fillText(el.content || "", px, py);
+          ctx.restore();
+          return Promise.resolve();
+        }
+        if (el.type === "sticker" && el.content){
+          return loadImageAsync(el.content).then(function(img){
+            // Stretched to exactly fill the box (matches the preview's
+            // object-fit:fill), so independent width/height resizing
+            // visibly distorts the sticker.
+            ctx.drawImage(img, px, py, pw, ph);
+          }).catch(function(){ /* skip broken sticker */ });
+        }
+        return Promise.resolve();
+      });
+    });
+
+    (template.texts || []).forEach(function(el){
+      chain = chain.then(function(){
+        if (!el.content) return;
+        var scale = outW / REF_W;
+        var fontPx = (el.fontSize || 32) * scale;
+        ctx.save();
+        ctx.font = "600 " + Math.round(fontPx) + "px Inter, sans-serif";
+        ctx.fillStyle = el.color || "#000000";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        var wrapEnabled = el.wrap !== false; // default true
+        var maxWidthPx = outW * 0.92;
+        var paragraphs = String(el.content).split("\n");
+        var lines = [];
+        paragraphs.forEach(function(p){
+          if (wrapEnabled){
+            lines = lines.concat(wrapTextToWidth(ctx, p, maxWidthPx));
+          } else {
+            lines.push(p);
+          }
+        });
+        var lineHeight = fontPx * 1.28;
+        var cx = el.x * outW, cy = el.y * outH;
+        var startY = cy - ((lines.length - 1) * lineHeight) / 2;
+        lines.forEach(function(line, i){
+          ctx.fillText(line, cx, startY + i * lineHeight);
+        });
+        ctx.restore();
+      });
+    });
+
+    return chain.then(function(){ return canvas; });
+  }
+
+  // Greedy word-wrap with a per-character fallback for long unbroken runs
+  // (Korean phrases usually have no spaces, so they wrap by character).
+  function wrapTextToWidth(ctx, text, maxWidth){
+    if (text === "") return [""];
+    if (ctx.measureText(text).width <= maxWidth) return [text];
+    var words = text.split(" ");
+    var lines = [];
+    var current = "";
+    words.forEach(function(word){
+      if (ctx.measureText(word).width > maxWidth){
+        if (current){ lines.push(current); current = ""; }
+        var buf = "";
+        word.split("").forEach(function(ch){
+          var test = buf + ch;
+          if (ctx.measureText(test).width > maxWidth && buf){
+            lines.push(buf);
+            buf = ch;
+          } else {
+            buf = test;
+          }
+        });
+        current = buf;
+        return;
+      }
+      var attempt = current ? current + " " + word : word;
+      if (ctx.measureText(attempt).width <= maxWidth){
+        current = attempt;
+      } else {
+        if (current) lines.push(current);
+        current = word;
+      }
+    });
+    if (current) lines.push(current);
+    return lines;
+  }
+
+  function downloadTemplateAsImage(template, format){
+    setCanvasBanner(null);
+    renderTemplateToCanvas(template).then(function(canvas){
+      var mime = format === "jpeg" ? "image/jpeg" : "image/png";
+      var url = canvas.toDataURL(mime, 0.95);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = (template.name || "dev-meme").replace(/[^a-zA-Z0-9가-힣_-]+/g,"_") + "." + (format === "jpeg" ? "jpg" : "png");
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }).catch(function(){
+      setCanvasBanner({ type:"error", text:"다운로드 중 오류가 발생했습니다. 다시 시도해주세요." });
+      render();
+    });
+  }
+
+  function downloadTemplateAsJSON(template){
+    var exportObj = {
+      id: template.id,
+      name: template.name,
+      ratio: template.ratio,
+      baseImage: template.baseImage,
+      images: template.images,
+      texts: template.texts
+    };
+    var blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = (template.name || "template").replace(/[^a-zA-Z0-9가-힣_-]+/g,"_") + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  /* =======================================================================
+     BANNERS
+  ======================================================================= */
+  function setCanvasBanner(b){ state.canvasBanner = b; }
+  function setTemplatesBanner(b){ state.templatesBanner = b; }
+
+  /* =======================================================================
+     NAVIGATION HELPERS
+  ======================================================================= */
+  function goToTemplates(){
+    state.screen = "templates";
+    state.currentTemplate = null;
+    state.currentSource = null;
+    state.selectedElement = null;
+    setTemplatesBanner(null);
+    render();
+  }
+
+  function openTemplateForEditing(template, source){
+    state.currentTemplate = deepClone(template);
+    if (!state.currentTemplate.bgColor) state.currentTemplate.bgColor = "#20252d";
+    state.currentSource = source; // "default" | "user" | "new"
+    state.selectedElement = null;
+    setCanvasBanner(null);
+    state.screen = "editor";
+    render();
+  }
+
+  function openBlankTemplate(){
+    openTemplateForEditing({
+      id: null,
+      name: "제목 없음",
+      ratio: "1:1",
+      bgColor: "#20252d",
+      baseImage: { src: null },
+      images: [],
+      texts: []
+    }, "new");
+  }
+
+  /* =======================================================================
+     TEMPLATE CRUD
+  ======================================================================= */
+  function saveCurrentTemplate(asCopy){
+    var t = state.currentTemplate;
+    if (!t.name || !t.name.trim()) t.name = "제목 없음";
+    var savedTpl;
+
+    if (state.currentSource === "user" && !asCopy){
+      // update in place
+      var idx = state.userTemplates.findIndex(function(x){ return x.id === t.id; });
+      var copy = deepClone(t);
+      if (idx >= 0){
+        state.userTemplates[idx] = copy;
+      } else {
+        copy.id = uid();
+        state.userTemplates.push(copy);
+        state.currentTemplate.id = copy.id;
+      }
+      savedTpl = copy;
+    } else {
+      var newTpl = deepClone(t);
+      newTpl.id = uid();
+      state.userTemplates.push(newTpl);
+      state.currentTemplate.id = newTpl.id;
+      state.currentSource = "user";
+      savedTpl = newTpl;
+    }
+    // No server/local storage — the in-memory list only lasts for this tab.
+    // Downloading the JSON is the actual "save" the user keeps.
+    downloadTemplateAsJSON(savedTpl);
+    setCanvasBanner({ type:"ok", text:"템플릿을 JSON으로 내려받았습니다. 이 목록은 새로고침하면 사라지니, 나중에 다시 쓰려면 방금 받은 JSON 파일을 보관해두세요." });
+    render();
+  }
+
+  function deleteUserTemplate(id){
+    state.userTemplates = state.userTemplates.filter(function(x){ return x.id !== id; });
+    setTemplatesBanner({ type:"ok", text:"템플릿을 삭제했습니다." });
+    render();
+  }
+
+  /* =======================================================================
+     ELEMENT OPERATIONS
+  ======================================================================= */
+  function addEmoji(char){
+    if (!char) return;
+    var el = { id: uid(), type:"emoji", content: char, x: 0.4, y: 0.4, width: 0.18, height: 0.18 };
+    state.currentTemplate.images.push(el);
+    state.selectedElement = { type:"image", id: el.id };
+    state.emojiPickerOpen = false;
+    render();
+  }
+
+  // Sizes the default box so the sticker starts at its true aspect ratio
+  // (accounting for the canvas not being square, e.g. 9:16).
+  function stickerDefaultBox(naturalW, naturalH){
+    var widthFrac = 0.32;
+    var ratio = RATIOS[state.currentTemplate.ratio] || RATIOS["1:1"];
+    var outWforRatio = ratio[0], outHforRatio = ratio[1];
+    var heightFrac = widthFrac * (outWforRatio / outHforRatio) * (naturalH / naturalW);
+    heightFrac = clamp(heightFrac, 0.05, 0.9);
+    return { width: widthFrac, height: heightFrac };
+  }
+
+  function addSticker(dataUrl, naturalW, naturalH){
+    var box = (naturalW && naturalH) ? stickerDefaultBox(naturalW, naturalH) : { width:0.28, height:0.28 };
+    var el = { id: uid(), type:"sticker", content: dataUrl, x: 0.35, y: 0.35, width: box.width, height: box.height };
+    state.currentTemplate.images.push(el);
+    state.selectedElement = { type:"image", id: el.id };
+    render();
+  }
+
+  function addText(){
+    var el = { id: uid(), content: "새 텍스트", x: 0.5, y: 0.5, fontSize: 32, color: "#ffffff", wrap: true };
+    state.currentTemplate.texts.push(el);
+    state.selectedElement = { type:"text", id: el.id };
+    render();
+  }
+
+  function findSelectedElement(){
+    if (!state.selectedElement || !state.currentTemplate) return null;
+    var list = state.selectedElement.type === "image" ? state.currentTemplate.images : state.currentTemplate.texts;
+    for (var i=0;i<list.length;i++){ if (list[i].id === state.selectedElement.id) return list[i]; }
+    return null;
+  }
+
+  function deleteSelectedElement(){
+    if (!state.selectedElement) return;
+    var t = state.currentTemplate;
+    if (state.selectedElement.type === "image"){
+      t.images = t.images.filter(function(x){ return x.id !== state.selectedElement.id; });
+    } else {
+      t.texts = t.texts.filter(function(x){ return x.id !== state.selectedElement.id; });
+    }
+    state.selectedElement = null;
+    render();
+  }
+
+  /* =======================================================================
+     FILE HANDLING
+  ======================================================================= */
+  var VALID_IMAGE_TYPES = ["image/png","image/jpeg","image/jpg"];
+
+  function readImageFile(file, onSuccess, onError){
+    if (!file){ return; }
+    if (VALID_IMAGE_TYPES.indexOf(file.type) === -1){
+      onError("지원하지 않는 파일 형식입니다. PNG 또는 JPEG 이미지를 사용해주세요.");
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e){
+      onSuccess(e.target.result);
+    };
+    reader.onerror = function(){
+      onError("파일을 읽는 중 오류가 발생했습니다. 다시 시도해주세요.");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /* =======================================================================
+     RENDER — ROOT
+  ======================================================================= */
+  function render(){
+    if (state.screen === "templates") renderTemplatesScreen();
+    else renderEditorScreen();
+  }
+
+  /* ---------- TEMPLATES SCREEN ---------- */
+  function renderTemplatesScreen(){
+    var html = "";
+    html += topbarHTML(false);
+    html += '<div class="screen-templates">';
+    html += '<div class="lead"><h1>어떤 카드를 만들까요?</h1><p>템플릿을 고르고 이미지와 문구를 자유롭게 편집한 뒤 다운로드하세요. 로그인 없이 이 브라우저에 저장됩니다.</p></div>';
+
+    html += '<div class="section-label">// default templates</div>';
+    html += '<div class="template-grid">';
+    DEFAULT_TEMPLATES.forEach(function(t){
+      var img0 = t.images[0], txt0 = t.texts[0];
+      html += '<button class="tpl-card" data-open-default="' + t.id + '">'
+        + '<div class="tpl-chrome"><span class="d"></span><span class="d"></span><span class="d"></span></div>'
+        + '<div class="tpl-preview" style="background:' + t.bgColor + '">'
+        + '<div class="emoji">' + (img0 ? img0.content : "") + '</div>'
+        + '<div class="phrase">' + escapeHTML(txt0 ? txt0.content : "") + '</div>'
+        + '</div>'
+        + '<div class="tpl-footer"><span>' + t.name + '</span><span>1:1</span></div>'
+        + '</button>';
+    });
+    html += '<button class="tpl-card special" data-open-blank="1">'
+      + '<div class="tpl-chrome"><span class="d"></span><span class="d"></span><span class="d"></span></div>'
+      + '<div class="tpl-preview"><div class="plus">+</div><div class="phrase">직접 만들기</div></div>'
+      + '<div class="tpl-footer"><span>blank</span><span>&nbsp;</span></div>'
+      + '</button>';
+    html += '</div>';
+
+    html += '<div class="section-label">// 내 템플릿 (이 탭에서만 유지, ' + state.userTemplates.length + ')</div>';
+    if (state.userTemplates.length === 0){
+      html += '<div class="empty-note">아직 저장한 템플릿이 없습니다. 템플릿을 편집한 뒤 "템플릿 저장"을 누르면 JSON 파일로 내려받을 수 있어요. (이 목록은 새로고침하면 사라집니다 — JSON 파일로 보관해두고 다시 열 때 Import 하세요.)</div>';
+    } else {
+      html += '<div class="mytpl-list">';
+      state.userTemplates.forEach(function(t){
+        var img0 = (t.images && t.images[0]) ? t.images[0].content : "🗂";
+        html += '<div class="mytpl-row">'
+          + '<div class="thumb">' + (img0.length <= 4 ? img0 : "🗂") + '</div>'
+          + '<div class="info"><div class="name">' + escapeHTML(t.name) + '</div>'
+          + '<div class="meta">' + t.ratio + ' · images ' + (t.images ? t.images.length : 0) + ' · texts ' + (t.texts ? t.texts.length : 0) + '</div></div>'
+          + '<div class="actions">'
+          + '<button class="btn small" data-load-user="' + t.id + '">불러오기</button>'
+          + '<button class="btn small ghost" data-export-user="' + t.id + '">Export</button>'
+          + '<button class="btn small danger" data-delete-user="' + t.id + '">삭제</button>'
+          + '</div></div>';
+      });
+      html += '</div>';
+    }
+
+    if (state.templatesBanner){
+      html += '<div class="banner ' + (state.templatesBanner.type === "error" ? "error" : "ok") + '">' + escapeHTML(state.templatesBanner.text) + '</div>';
+    }
+
+    html += '<div class="import-box">';
+    html += '<div class="section-label">// json import</div>';
+    html += '<textarea id="import-textarea" placeholder="템플릿 JSON을 붙여넣으세요">' + escapeHTML(state.importText || "") + '</textarea>';
+    html += '<div class="import-row">';
+    html += '<button class="btn file-btn small">파일 선택<input type="file" id="import-file-input" accept="application/json,.json" /></button>';
+    html += '<button class="btn primary small" id="import-run-btn">JSON Import</button>';
+    html += '</div>';
+    html += '</div>';
+
+    html += '</div>'; // screen-templates
+    app.innerHTML = html;
+    bindTemplatesScreenEvents();
+  }
+
+  function bindTemplatesScreenEvents(){
+    qsa("[data-open-default]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.getAttribute("data-open-default");
+        var t = DEFAULT_TEMPLATES.filter(function(x){ return x.id === id; })[0];
+        if (t) openTemplateForEditing(t, "default");
+      });
+    });
+    var blankBtn = qs("[data-open-blank]");
+    if (blankBtn) blankBtn.addEventListener("click", openBlankTemplate);
+
+    qsa("[data-load-user]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.getAttribute("data-load-user");
+        var t = state.userTemplates.filter(function(x){ return x.id === id; })[0];
+        if (t) openTemplateForEditing(t, "user");
+      });
+    });
+    qsa("[data-export-user]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.getAttribute("data-export-user");
+        var t = state.userTemplates.filter(function(x){ return x.id === id; })[0];
+        if (t) downloadTemplateAsJSON(t);
+      });
+    });
+    qsa("[data-delete-user]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.getAttribute("data-delete-user");
+        deleteUserTemplate(id);
+      });
+    });
+
+    var ta = qs("#import-textarea");
+    if (ta){
+      ta.addEventListener("input", function(){ state.importText = ta.value; });
+    }
+    var fileInput = qs("#import-file-input");
+    if (fileInput){
+      fileInput.addEventListener("change", function(){
+        var file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(e){
+          state.importText = String(e.target.result || "");
+          runImport();
+        };
+        reader.onerror = function(){
+          setTemplatesBanner({ type:"error", text:"파일을 읽는 중 오류가 발생했습니다." });
+          render();
+        };
+        reader.readAsText(file);
+      });
+    }
+    var runBtn = qs("#import-run-btn");
+    if (runBtn) runBtn.addEventListener("click", runImport);
+  }
+
+  function runImport(){
+    var raw = state.importText || "";
+    if (!raw.trim()){
+      setTemplatesBanner({ type:"error", text:"가져올 JSON 내용을 입력하거나 파일을 선택해주세요." });
+      render();
+      return;
+    }
+    var result = parseAndValidateJSON(raw);
+    if (!result.ok){
+      // validation failed -> existing templates are left completely untouched
+      setTemplatesBanner({ type:"error", text:result.error });
+      render();
+      return;
+    }
+    var incoming = deepClone(result.template);
+    incoming.id = uid(); // always assign a fresh id to avoid collisions
+    if (!incoming.bgColor) incoming.bgColor = "#20252d";
+    state.userTemplates.push(incoming);
+    state.importText = "";
+    setTemplatesBanner({ type:"ok", text:'"' + incoming.name + '" 템플릿을 가져왔습니다.' });
+    render();
+  }
+
+  /* ---------- EDITOR SCREEN ---------- */
+  function resizeHandlesHTML(elType){
+    var html = '<div class="resize-handle" data-resize-handle="corner"></div>';
+    if (elType === "sticker"){
+      html += '<div class="resize-handle edge-right" data-resize-handle="right"></div>';
+      html += '<div class="resize-handle edge-bottom" data-resize-handle="bottom"></div>';
+    }
+    return html;
+  }
+
+  function renderEditorScreen(){
+    var t = state.currentTemplate;
+    var ratio = RATIOS[t.ratio] || RATIOS["1:1"];
+    var html = "";
+    html += topbarHTML(true);
+    html += '<div class="screen-editor">';
+
+    // canvas column
+    html += '<div class="editor-canvas-col">';
+    html += '<div class="ratio-tabs">';
+    ["1:1","4:5","9:16"].forEach(function(r){
+      html += '<button data-ratio="' + r + '" class="' + (t.ratio === r ? "active" : "") + '">' + r + '</button>';
+    });
+    html += '</div>';
+
+    html += '<div class="canvas-shell">';
+    html += '<div class="canvas-tab"><span class="tpl-id-dot"></span><span id="canvas-tab-name">' + escapeHTML(t.name || "제목 없음") + '</span>.card</div>';
+    var wrapStyle = 'aspect-ratio:' + ratio[0] + '/' + ratio[1] + ';';
+    var bgStyle = t.baseImage && t.baseImage.src
+      ? "background-image:url('" + t.baseImage.src + "');background-color:" + (t.bgColor||"#20252d")
+      : "background-color:" + (t.bgColor || "#20252d");
+    html += '<div id="canvas-wrap" style="' + wrapStyle + bgStyle + '">';
+
+    if ((t.images||[]).length === 0 && (t.texts||[]).length === 0){
+      html += '<div class="empty-canvas-hint">오른쪽 패널에서<br/>이미지나 텍스트를 추가해보세요</div>';
+    }
+
+    (t.images||[]).forEach(function(el){
+      var sel = state.selectedElement && state.selectedElement.type === "image" && state.selectedElement.id === el.id;
+      var style = "left:" + (el.x*100) + "%;top:" + (el.y*100) + "%;width:" + (el.width*100) + "%;height:" + (el.height*100) + "%;";
+      html += '<div class="el el-image' + (sel?' selected':'') + '" data-el-type="image" data-el-id="' + el.id + '" style="' + style + '">';
+      if (el.type === "emoji"){
+        html += '<div class="emoji-glyph" style="font-size:' + emojiPreviewSize(el) + 'px">' + el.content + '</div>';
+      } else {
+        html += '<img src="' + el.content + '" draggable="false" alt="sticker" />';
+      }
+      if (sel){ html += resizeHandlesHTML(el.type); }
+      html += '</div>';
+    });
+
+    (t.texts||[]).forEach(function(el){
+      var sel = state.selectedElement && state.selectedElement.type === "text" && state.selectedElement.id === el.id;
+      var wrapClass = el.wrap === false ? " nowrap" : "";
+      var style = "left:" + (el.x*100) + "%;top:" + (el.y*100) + "%;color:" + el.color + ";font-weight:600;font-size:" + textPreviewFontSize(el) + "px;";
+      html += '<div class="el el-text' + wrapClass + (sel?' selected':'') + '" data-el-type="text" data-el-id="' + el.id + '" data-font-size="' + el.fontSize + '" style="' + style + '">' + escapeHTML(el.content).replace(/\n/g,"<br/>") + '</div>';
+    });
+
+    html += '</div>'; // canvas-wrap
+    html += '</div>'; // canvas-shell
+
+    if (state.canvasBanner){
+      html += '<div class="banner ' + (state.canvasBanner.type === "error" ? "error" : "ok") + '" style="max-width:460px;">' + escapeHTML(state.canvasBanner.text) + '</div>';
+    }
+
+    html += '</div>'; // editor-canvas-col
+
+    // side panel
+    html += '<div class="editor-panel">';
+    html += '<div class="panel-block"><div class="title">// template name</div>'
+      + '<input class="tpl-name-input" id="tpl-name-input" value="' + escapeAttr(t.name) + '" placeholder="템플릿 이름" /></div>';
+
+    html += '<div class="divider"></div>';
+
+    html += '<div class="panel-block"><div class="title">// base image</div>';
+    html += '<button class="btn block file-btn">배경 이미지 업로드<input type="file" id="base-image-input" accept="image/png,image/jpeg" /></button>';
+    if (t.baseImage && t.baseImage.src){
+      html += '<button class="btn small ghost" id="clear-base-image">배경 이미지 제거</button>';
+    }
+    html += '</div>';
+
+    html += '<div class="divider"></div>';
+
+    html += '<div class="panel-block"><div class="title">// 스티커 추가</div>';
+    html += '<button class="btn block" id="open-emoji-picker-btn">🙂 이모지 추가</button>';
+    html += '<button class="btn block file-btn">이미지 업로드<input type="file" id="sticker-input" accept="image/png,image/jpeg" /></button>';
+    html += '</div>';
+
+    html += '<div class="divider"></div>';
+
+    html += '<div class="panel-block"><div class="title">// 텍스트 추가</div>';
+    html += '<button class="btn block" id="add-text-btn">+ 텍스트 추가</button>';
+    html += '</div>';
+
+    html += '<div class="divider"></div>';
+
+    // selected element editor
+    html += '<div class="panel-block"><div class="title">// 선택된 요소</div>';
+    var selEl = findSelectedElement();
+    if (!selEl){
+      html += '<div class="no-selection">캔버스에서 이미지나 텍스트를 클릭하면<br/>여기서 편집할 수 있습니다.</div>';
+    } else if (state.selectedElement.type === "text"){
+      html += '<div class="field"><label>내용</label><textarea id="text-content-input">' + escapeHTML(selEl.content) + '</textarea></div>';
+      html += '<div class="field"><label>글자 크기 (' + selEl.fontSize + ')</label>'
+        + '<div class="field-row"><input type="range" min="10" max="120" id="text-fontsize-input" value="' + selEl.fontSize + '" /></div></div>';
+      html += '<div class="field"><label>색상</label><div class="color-input-row"><input type="color" id="text-color-input" value="' + selEl.color + '" /><span class="color-hex">' + selEl.color + '</span></div></div>';
+      var wrapOn = selEl.wrap !== false;
+      html += '<div class="field toggle-row"><span class="toggle-label">경계에서 자동 줄바꿈</span>'
+        + '<div class="toggle-switch' + (wrapOn ? ' on' : '') + '" id="text-wrap-toggle"><div class="knob"></div></div></div>';
+      html += '<div class="toggle-hint">' + (wrapOn ? '카드 폭에 맞춰 자동으로 줄이 바뀝니다.' : '줄바꿈 없이 카드 밖으로 넘어갈 수 있습니다.') + '</div>';
+      html += '<button class="btn danger block" id="delete-el-btn">선택 요소 삭제</button>';
+    } else {
+      html += '<div class="field"><label>유형</label><div style="font-size:13px;color:var(--text-dim);">' + (selEl.type === "emoji" ? "이모지" : "스티커 이미지") + '</div></div>';
+      if (selEl.type === "sticker"){
+        html += '<div class="field"><label>크기 조절</label><div style="font-size:12px;color:var(--text-faint);line-height:1.6;">모서리(●)를 드래그하면 원래 비율 그대로 커집니다.<br/>오른쪽 옆·아래쪽 손잡이를 드래그하면 가로/세로를 따로 늘려 모양을 바꿀 수 있습니다.</div></div>';
+      } else {
+        html += '<div class="field"><label>크기 안내</label><div style="font-size:12px;color:var(--text-faint);line-height:1.5;">캔버스에서 우측 하단의 점을 드래그하면 크기가 바뀝니다.</div></div>';
+      }
+      html += '<button class="btn danger block" id="delete-el-btn">선택 요소 삭제</button>';
+    }
+    html += '</div>';
+
+    html += '<div class="divider"></div>';
+
+    html += '<div class="panel-actions">';
+    html += '<div class="row"><button class="btn primary" id="save-tpl-btn">템플릿 저장</button>';
+    if (state.currentSource === "user"){
+      html += '<button class="btn ghost" id="save-copy-btn">복제 저장</button>';
+    }
+    html += '</div>';
+    html += '<div class="row"><button class="btn" id="download-png-btn">PNG 다운로드</button><button class="btn" id="download-jpg-btn">JPEG 다운로드</button></div>';
+    html += '<button class="btn ghost" id="export-json-btn">JSON Export</button>';
+    html += '<button class="btn ghost" id="back-btn">← 템플릿 선택으로</button>';
+    html += '</div>';
+
+    html += '</div>'; // editor-panel
+    html += '</div>'; // screen-editor
+
+    if (state.emojiPickerOpen){
+      html += emojiPickerModalHTML();
+    }
+
+    app.innerHTML = html;
+    bindEditorScreenEvents();
+  }
+
+  function emojiPickerModalHTML(){
+    var html = '<div class="emoji-picker-backdrop" id="emoji-picker-backdrop">';
+    html += '<div class="emoji-picker-modal">';
+    html += '<div class="emoji-picker-head"><span class="t">// 이모지 선택</span><button class="btn small ghost" id="emoji-picker-close">닫기</button></div>';
+    html += '<div class="emoji-picker-body">';
+    EMOJI_SECTIONS.forEach(function(section){
+      html += '<div class="emoji-picker-section"><div class="section-label">' + escapeHTML(section.label) + '</div><div class="emoji-picker-grid">';
+      section.items.forEach(function(e){
+        html += '<button data-pick-emoji="' + e + '">' + e + '</button>';
+      });
+      html += '</div></div>';
+    });
+    html += '</div>';
+    html += '<div class="emoji-picker-custom"><input id="emoji-picker-custom-input" maxlength="4" placeholder="직접 입력" /><button class="btn small" id="emoji-picker-custom-add">추가</button></div>';
+    html += '</div></div>';
+    return html;
+  }
+
+  function emojiPreviewSize(el){
+    var wrap = document.getElementById("canvas-wrap");
+    var containerH = wrap ? wrap.clientHeight : 460;
+    return Math.max(10, el.height * containerH);
+  }
+
+  function textPreviewFontSize(el){
+    var wrap = document.getElementById("canvas-wrap");
+    var containerW = wrap ? wrap.clientWidth : 460;
+    return Math.max(6, Math.round((el.fontSize || 32) * (containerW / REF_W)));
+  }
+
+  function bindEditorScreenEvents(){
+    qs("#back-btn").addEventListener("click", goToTemplates);
+
+    qsa("[data-ratio]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        applyRatioChange(state.currentTemplate, btn.getAttribute("data-ratio"));
+        render();
+      });
+    });
+
+    var nameInput = qs("#tpl-name-input");
+    nameInput.addEventListener("input", function(){
+      state.currentTemplate.name = nameInput.value;
+      var tabName = qs("#canvas-tab-name");
+      if (tabName) tabName.textContent = nameInput.value || "제목 없음";
+    });
+
+    var baseImageInput = qs("#base-image-input");
+    baseImageInput.addEventListener("change", function(){
+      var file = baseImageInput.files && baseImageInput.files[0];
+      readImageFile(file, function(dataUrl){
+        state.currentTemplate.baseImage = { src: dataUrl };
+        setCanvasBanner(null);
+        render();
+      }, function(msg){
+        setCanvasBanner({ type:"error", text: msg });
+        render();
+      });
+    });
+    var clearBase = qs("#clear-base-image");
+    if (clearBase){
+      clearBase.addEventListener("click", function(){
+        state.currentTemplate.baseImage = { src: null };
+        render();
+      });
+    }
+
+    var openEmojiBtn = qs("#open-emoji-picker-btn");
+    if (openEmojiBtn){
+      openEmojiBtn.addEventListener("click", function(){
+        state.emojiPickerOpen = true;
+        render();
+      });
+    }
+    bindEmojiPickerEvents();
+
+    var stickerInput = qs("#sticker-input");
+    stickerInput.addEventListener("change", function(){
+      var file = stickerInput.files && stickerInput.files[0];
+      readImageFile(file, function(dataUrl){
+        setCanvasBanner(null);
+        var probe = new Image();
+        probe.onload = function(){
+          addSticker(dataUrl, probe.naturalWidth, probe.naturalHeight);
+        };
+        probe.onerror = function(){
+          addSticker(dataUrl);
+        };
+        probe.src = dataUrl;
+      }, function(msg){
+        setCanvasBanner({ type:"error", text: msg });
+        render();
+      });
+    });
+
+    qs("#add-text-btn").addEventListener("click", addText);
+
+    var selEl = findSelectedElement();
+    if (selEl && state.selectedElement.type === "text"){
+      var contentInput = qs("#text-content-input");
+      contentInput.addEventListener("input", function(){
+        selEl.content = contentInput.value;
+        syncTextElementDOM(selEl);
+      });
+      var fsInput = qs("#text-fontsize-input");
+      fsInput.addEventListener("input", function(){
+        selEl.fontSize = parseInt(fsInput.value, 10);
+        var labelEl = fsInput.closest(".field").querySelector("label");
+        if (labelEl) labelEl.textContent = "글자 크기 (" + selEl.fontSize + ")";
+        var node = document.querySelector('.el-text[data-el-id="' + selEl.id + '"]');
+        if (node) node.style.fontSize = textPreviewFontSize(selEl) + "px";
+      });
+      var colorInput = qs("#text-color-input");
+      colorInput.addEventListener("input", function(){
+        selEl.color = colorInput.value;
+        syncTextElementDOM(selEl);
+        var hex = qs(".color-hex"); if (hex) hex.textContent = selEl.color;
+      });
+      var wrapToggle = qs("#text-wrap-toggle");
+      if (wrapToggle){
+        wrapToggle.addEventListener("click", function(){
+          selEl.wrap = !(selEl.wrap !== false); // flip, defaulting current "true"
+          render();
+        });
+      }
+    }
+    var delBtn = qs("#delete-el-btn");
+    if (delBtn) delBtn.addEventListener("click", deleteSelectedElement);
+
+    qs("#save-tpl-btn").addEventListener("click", function(){ saveCurrentTemplate(false); });
+    var saveCopyBtn = qs("#save-copy-btn");
+    if (saveCopyBtn) saveCopyBtn.addEventListener("click", function(){ saveCurrentTemplate(true); });
+
+    qs("#download-png-btn").addEventListener("click", function(){ downloadTemplateAsImage(state.currentTemplate, "png"); });
+    qs("#download-jpg-btn").addEventListener("click", function(){ downloadTemplateAsImage(state.currentTemplate, "jpeg"); });
+    qs("#export-json-btn").addEventListener("click", function(){ downloadTemplateAsJSON(state.currentTemplate); });
+
+    bindCanvasInteractions();
+
+    document.onkeydown = function(e){
+      if (state.screen !== "editor") return;
+      var active = document.activeElement;
+      var isTyping = active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA");
+      if (isTyping) return;
+      if ((e.key === "Delete" || e.key === "Backspace") && state.selectedElement){
+        e.preventDefault();
+        deleteSelectedElement();
+      }
+    };
+  }
+
+  function bindEmojiPickerEvents(){
+    var backdrop = qs("#emoji-picker-backdrop");
+    if (!backdrop) return;
+    backdrop.addEventListener("mousedown", function(e){
+      if (e.target === backdrop){
+        state.emojiPickerOpen = false;
+        render();
+      }
+    });
+    var closeBtn = qs("#emoji-picker-close");
+    if (closeBtn) closeBtn.addEventListener("click", function(){
+      state.emojiPickerOpen = false;
+      render();
+    });
+    qsa("[data-pick-emoji]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        addEmoji(btn.getAttribute("data-pick-emoji"));
+      });
+    });
+    var customInput = qs("#emoji-picker-custom-input");
+    var customAdd = qs("#emoji-picker-custom-add");
+    if (customAdd){
+      customAdd.addEventListener("click", function(){
+        var val = customInput.value.trim();
+        if (val) addEmoji(val);
+      });
+    }
+  }
+
+  function syncTextElementDOM(el){
+    var node = document.querySelector('.el-text[data-el-id="' + el.id + '"]');
+    if (node){
+      node.innerHTML = escapeHTML(el.content).replace(/\n/g,"<br/>");
+      node.style.color = el.color;
+    }
+  }
+
+  /* ---------- CANVAS DRAG / RESIZE ---------- */
+  var dragState = null;
+
+  function bindCanvasInteractions(){
+    var wrap = qs("#canvas-wrap");
+    if (!wrap) return;
+
+    wrap.addEventListener("pointerdown", function(e){
+      var handle = e.target.closest("[data-resize-handle]");
+      var elNode = e.target.closest(".el");
+      if (handle){
+        var parentEl = handle.closest(".el");
+        var id = parentEl.getAttribute("data-el-id");
+        var elData = state.currentTemplate.images.filter(function(x){ return x.id === id; })[0];
+        if (!elData) return;
+        dragState = {
+          mode:"resize",
+          kind: handle.getAttribute("data-resize-handle") || "corner", // "corner" | "right" | "bottom"
+          id:id, node: parentEl,
+          startX:e.clientX, startY:e.clientY,
+          origW: elData.width, origH: elData.height,
+          wrapRect: wrap.getBoundingClientRect()
+        };
+        e.stopPropagation();
+        wrap.setPointerCapture(e.pointerId);
+        return;
+      }
+      if (elNode){
+        var type = elNode.getAttribute("data-el-type");
+        var id2 = elNode.getAttribute("data-el-id");
+        var list = type === "image" ? state.currentTemplate.images : state.currentTemplate.texts;
+        var data = list.filter(function(x){ return x.id === id2; })[0];
+        if (!data) return;
+
+        // Select without a full re-render, so the DOM node we're about to
+        // drag stays attached (a full render() would rebuild the canvas
+        // and detach it mid-drag).
+        state.selectedElement = { type: type, id: id2 };
+        qsa(".el.selected").forEach(function(n){ n.classList.remove("selected"); });
+        qsa(".resize-handle").forEach(function(n){ n.remove(); });
+        elNode.classList.add("selected");
+        if (type === "image"){
+          elNode.insertAdjacentHTML("beforeend", resizeHandlesHTML(data.type));
+        }
+
+        dragState = {
+          mode:"move", id:id2, type:type, node: elNode,
+          startX:e.clientX, startY:e.clientY,
+          origX: data.x, origY: data.y,
+          wrapRect: wrap.getBoundingClientRect()
+        };
+        wrap.setPointerCapture(e.pointerId);
+        return;
+      }
+      // clicked empty canvas -> deselect
+      if (state.selectedElement){
+        state.selectedElement = null;
+        render();
+      }
+    });
+
+    wrap.addEventListener("pointermove", function(e){
+      if (!dragState) return;
+      var rect = dragState.wrapRect;
+      var dxFrac = (e.clientX - dragState.startX) / rect.width;
+      var dyFrac = (e.clientY - dragState.startY) / rect.height;
+
+      if (dragState.mode === "move"){
+        var list = dragState.type === "image" ? state.currentTemplate.images : state.currentTemplate.texts;
+        var data = list.filter(function(x){ return x.id === dragState.id; })[0];
+        if (!data) return;
+        data.x = clamp(dragState.origX + dxFrac, -0.15, 1.15);
+        data.y = clamp(dragState.origY + dyFrac, -0.15, 1.15);
+        dragState.node.style.left = (data.x*100) + "%";
+        dragState.node.style.top = (data.y*100) + "%";
+      } else if (dragState.mode === "resize"){
+        var elData = state.currentTemplate.images.filter(function(x){ return x.id === dragState.id; })[0];
+        if (!elData) return;
+
+        if (dragState.kind === "corner"){
+          // Proportional resize: locks the box's current on-screen aspect
+          // ratio, so the element keeps its shape (no distortion).
+          var newW = clamp(dragState.origW + dxFrac, 0.03, 1.6);
+          var scale = newW / dragState.origW;
+          var newH = clamp(dragState.origH * scale, 0.03, 1.6);
+          elData.width = newW;
+          elData.height = newH;
+        } else if (dragState.kind === "right"){
+          // Stretch width only — distorts a sticker away from its original shape.
+          elData.width = clamp(dragState.origW + dxFrac, 0.03, 1.6);
+        } else if (dragState.kind === "bottom"){
+          // Stretch height only — distorts a sticker away from its original shape.
+          elData.height = clamp(dragState.origH + dyFrac, 0.03, 1.6);
+        }
+
+        dragState.node.style.width = (elData.width*100) + "%";
+        dragState.node.style.height = (elData.height*100) + "%";
+        var glyph = dragState.node.querySelector(".emoji-glyph");
+        if (glyph) glyph.style.fontSize = emojiPreviewSize(elData) + "px";
+      }
+    });
+
+    function endDrag(){
+      if (dragState){
+        dragState = null;
+        render();
+      }
+    }
+    wrap.addEventListener("pointerup", endDrag);
+    wrap.addEventListener("pointercancel", endDrag);
+  }
+
+  /* =======================================================================
+     SMALL HELPERS
+  ======================================================================= */
+  function qs(sel){ return app.querySelector(sel); }
+  function qsa(sel){ return Array.prototype.slice.call(app.querySelectorAll(sel)); }
+  function escapeHTML(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+  function escapeAttr(s){
+    return String(s == null ? "" : s).replace(/"/g,"&quot;");
+  }
+
+  function topbarHTML(inEditor){
+    var html = '<div class="topbar">';
+    html += '<div class="brand" id="brand-home"><span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="name">Dev Meme<span>Studio</span></span></div>';
+    html += '<div class="topbar-right">';
+    if (inEditor){
+      html += '<span style="font-family:var(--mono);font-size:11px;color:var(--text-faint);">no login · JSON으로 내려받아 보관하세요</span>';
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  document.addEventListener("click", function(e){
+    var home = e.target.closest("#brand-home");
+    if (home) goToTemplates();
+  });
+
+  var resizeDebounceTimer = null;
+  window.addEventListener("resize", function(){
+    if (state.screen !== "editor") return;
+    clearTimeout(resizeDebounceTimer);
+    resizeDebounceTimer = setTimeout(function(){ render(); }, 120);
+  });
+
+  /* =======================================================================
+     INIT
+  ======================================================================= */
+  render();
+})();
+</script>
+</body>
+</html>
